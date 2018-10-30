@@ -1,0 +1,14 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 15
+    },
+    "auditLog": "c:\\GitHub\\Events\\.9e954221b7d878751ff334a5463b1e9f49a7f885-audit.json",
+    "files": [
+        {
+            "date": 1540935853030,
+            "name": "c:\\GitHub\\Events\\Log-2018-10-30.txt",
+            "hash": "67e4d8fad6147f37ab2eaf4f5e38a6f2"
+        }
+    ]
+}

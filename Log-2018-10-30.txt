@@ -1,0 +1,7 @@
+2018-10-30T21:43:57.751Z info: Application Start
+2018-10-30T21:45:04.732Z info: Application Start
+2018-10-30T21:45:08.636Z error: Unexpected Error: TestError
+2018-10-30T21:45:21.277Z info: Application Start
+2018-10-30T21:45:38.678Z info: Application Start
+2018-10-30T21:46:26.284Z info: Application Start
+2018-10-30T21:46:35.158Z error: Unexpected Error: Error: ENOENT: no such file or directory, open 'c:\GitHub\Events\EventCities.jsonxsdfsd'
