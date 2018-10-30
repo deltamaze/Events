@@ -1,0 +1,14 @@
+{
+    "extends": "airbnb-base",
+    "rules": {
+        "linebreak-style": ["error", "windows"]
+    },
+    "overrides": [
+        {
+            "files":["*.js"],
+            "rules": {
+                "no-console":"off"
+            }
+        }
+    ]
+}
