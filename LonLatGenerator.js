@@ -4,7 +4,7 @@
 // Import Libs
 const nodemailer = require('nodemailer');
 const fs = require('fs'); // eslint-disable-line
-const https = require('https'); // eslint-disable-line
+const axios = require('axios');
 const path = require('path');
 const winston = require('winston');
 require('winston-daily-rotate-file');
@@ -66,6 +66,32 @@ try {
   // csvtojson EventCities.csv > EventCities.json
   // parse json file into code
   const cities = JSON.parse(fs.readFileSync(path.resolve(__dirname, './EventCities.json')));
+  let openThreads = 0;
+  const getMapRequest = (city, state, key, index) => {
+    axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${city},+${state}&key=${key}`, {
+      params: {
+        index,
+      },
+    })
+      .then((response) => {
+        console.log(response);
+        openThreads -= 1;
+        console.log(params);
+      })
+      .catch((error) => {
+        console.log(error);
+        openThreads -= 1;
+      });
+  };
+  for (let x = 0;
+    x < 2; // Object.keys(cities).length;
+    x += 1) {
+    openThreads += 1;
+    if (cities[x].lon === '') { // only find lat/lon if not already set
+      console.log(cities[x]);
+      getMapRequest(cities[x].City, cities[x].State, Secrets.googleApiKey, x);
+    }
+  }
   // save updated json object
   fs.writeFileSync(path.resolve(__dirname, './EventCities.json'), JSON.stringify(cities));
 } catch (err) {
