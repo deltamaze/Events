@@ -4,7 +4,6 @@
 // Import Libs
 const nodemailer = require('nodemailer');
 const fs = require('fs'); // eslint-disable-line
-const axios = require('axios');
 // const _ = require('lodash');
 const path = require('path');
 const winston = require('winston');
@@ -62,10 +61,32 @@ try {
     logger.info(msg); // eslint-disable-line no-console
   };
 
-  // eslint-disable-next-line arrow-body-style
-  const sleep = (ms) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  const calcIs300MilesFromCC = (lat1, lon1) => {
+    const unit = 'N'; // Miles
+    const lat2 = 27.8005828;
+    const lon2 = -97.39638099999999;
+    const radlat1 = Math.PI * lat1 / 180;
+    const radlat2 = Math.PI * lat2 / 180;
+    const theta = lon1 - lon2;
+    const radtheta = Math.PI * theta / 180;
+    let dist = Math.sin(radlat1)
+      * Math.sin(radlat2)
+      + Math.cos(radlat1)
+      * Math.cos(radlat2)
+      * Math.cos(radtheta);
+    if (dist > 1) {
+      dist = 1;
+    }
+    dist = Math.acos(dist);
+    dist = dist * 180 / Math.PI;
+    dist = dist * 60 * 1.1515;
+    if (unit === 'K') { dist *= 1.609344; }
+    if (unit === 'N') { dist *= 0.8684; }
+    console.log(dist);
+    return (dist <= 300); // return bool value if input param is within 300 miles of CC
   };
+
+
   // got list of cities into google sheets
   // exported to csv file from sheets
   // converted to json using cli csvtojson cmd below
@@ -73,42 +94,19 @@ try {
   // parse json file into code
   const cities = JSON.parse(fs.readFileSync(path.resolve(__dirname, './EventCities.json')));
 
-  const getMapRequest = (city, state, key, index) => {
-    axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${city},+${state}&key=${key}`, {
-      params: {
-        index,
-      },
-    })
-      .then((response) => {
-        if (response.data.results[0] === undefined) {
-          console.log(response.data);
-          console.log(cities[response.config.params.index]);
-          return;
-        }
-        cities[response.config.params.index].Lat = response.data.results[0].geometry.location.lat;
-        cities[response.config.params.index].Lon = response.data.results[0].geometry.location.lng;
-        fs.writeFileSync(path.resolve(__dirname, './EventCities.json'), JSON.stringify(cities));
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
   const execLoop = async () => {
     for (let x = 0;
       x < Object.keys(cities).length;
       x += 1) {
-      if (cities[x].Lon === '') { // only find lat/lon if not already set
-        console.log(cities[x]);
-        // eslint-disable-next-line no-await-in-loop
-        await sleep(100);
-        getMapRequest(cities[x].City, cities[x].State, Secrets.googleApiKey, x);
+      if (cities[x].Lon !== '') { // only find lat/lon if not already set
+        console.log(cities[x].City);
+        cities[x].Is300MilesFromCC = calcIs300MilesFromCC(cities[x].Lat, cities[x].Lon);
       }
     }
+    fs.writeFileSync(path.resolve(__dirname, './EventCities.json'), JSON.stringify(cities));
   };
   execLoop();
   // save updated json object
-  // fs.writeFileSync(path.resolve(__dirname, './EventCities.json'), JSON.stringify(cities));
 } catch (err) {
   logger.error(`Unexpected Error: ${err}`);
 }
